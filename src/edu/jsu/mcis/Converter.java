@@ -5,6 +5,7 @@ import java.util.*;
 import com.opencsv.*;
 import org.json.simple.*;
 import org.json.simple.parser.*;
+import java.util.ArrayList;
 
 public class Converter {
     
@@ -69,6 +70,56 @@ public class Converter {
             
             // INSERT YOUR CODE HERE
             
+            
+            
+            JSONArray colHeaders = new JSONArray();
+            JSONArray rowHeaders = new JSONArray();
+            JSONArray data = new JSONArray();
+            JSONObject jsonObject = new JSONObject();
+            
+            String [] rows;
+           
+         
+            colHeaders.addAll(Arrays.asList(iterator.next()));
+            
+            
+            while (iterator.hasNext())
+            {
+                rows = iterator.next();
+                JSONArray records = new JSONArray();
+                
+                
+                rowHeaders.add(rows[0]);
+                
+                
+                for (int i = 1; i < rows.length; ++ i)
+                {
+                    int nums = Integer.parseInt(rows[i]);
+                    records.add(nums);
+                    
+                }
+                
+                data.add(records);
+                records = new JSONArray();
+               
+               
+                
+                
+                
+            }
+               jsonObject.put("data", data);
+               jsonObject.put("colHeaders",colHeaders);
+               jsonObject.put("rowHeaders", rowHeaders);
+               
+               
+               
+            
+            results =JSONValue.toJSONString(jsonObject);
+            
+            
+            
+           
+            
         }        
         catch(Exception e) { return e.toString(); }
         
@@ -80,12 +131,59 @@ public class Converter {
         
         String results = "";
         
+        
+        
         try {
 
             StringWriter writer = new StringWriter();
             CSVWriter csvWriter = new CSVWriter(writer, ',', '"', '\n');
             
             // INSERT YOUR CODE HERE
+            JSONParser parser = new JSONParser();
+            JSONObject jsonObject = (JSONObject)parser.parse(jsonString);
+            
+            JSONArray colHeaders = (JSONArray) jsonObject.get("colHeaders");
+            JSONArray rowHeaders = (JSONArray) jsonObject.get("rowHeaders");
+            JSONArray data = (JSONArray) jsonObject.get("data");
+            
+            String [] col = new String[colHeaders.size()];
+            String [] row = new String[rowHeaders.size()];
+            String [] csvData = new String[data.size()];
+            
+            
+            for ( int i = 0; i < colHeaders.size(); ++i)
+            {
+                col[i] = colHeaders.get(i).toString();
+            }
+            
+            csvWriter.writeNext(col);
+            
+            for (int i =0; i < rowHeaders.size(); ++i)
+            {
+                row[i] = rowHeaders.get(i).toString();
+                csvData[i] = data.get(i).toString();
+            }
+            
+            
+            
+            for (int i = 0; i < csvData.length; ++i)
+            {
+                JSONArray dataValues = (JSONArray)parser.parse(csvData[i]);
+                String[] line = new String[dataValues.size() + 1];
+                
+                line[0] = row[i];
+                
+                for (int j = 1; j < line.length; ++j)
+                {
+                    String value = String.valueOf(dataValues.get(j - 1));
+                    line[j] = value;
+                }
+                
+                
+                csvWriter.writeNext(line);
+            }
+            
+            results = writer.toString();
             
         }
         
